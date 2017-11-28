@@ -1,0 +1,131 @@
+root@k0:~/work# cc get hostEndpoint -o wide
+NODE   NAME    INTERFACE   IPS          PROFILES         
+k0     ens34   ens34       20.1.0.160   k8s_ns.default   
+k2     ens34   ens34       20.1.0.150   k8s_ns.default 
+
+root@k0:~/work# kc get svc -o wide
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE       SELECTOR
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   13d       <none>
+svc-test-1   ClusterIP   10.111.30.201   20.1.0.167    80/TCP    7d        app=web-front-end
+
+root@k0:~/work# curl http://10.111.30.201
+This is Web Server 1 running on 8080!
+root@k0:~/work# curl http://20.1.0.167
+This is Web Server 1 running on 9090!
+
+root@k0:~/work# kw
+NAMESPACE     NAME                                       READY     STATUS    RESTARTS   AGE       IP               NODE
+default       deploy-test-1-7779cfc7f9-kldx9             1/1       Running   0          6d        192.168.99.34    k2
+default       deploy-test-1-7779cfc7f9-klxtr             1/1       Running   0          6d        192.168.99.35    k2
+default       deploy-test-1-7779cfc7f9-nstnm             1/1       Running   0          7d        192.168.99.32    k2
+default       deploy-test-2-5d9f58b8cd-blcm6             1/1       Running   0          6d        192.168.99.38    k2
+default       deploy-test-2-5d9f58b8cd-j66ct             1/1       Running   0          6d        192.168.99.36    k2
+default       deploy-test-2-5d9f58b8cd-lc99l             1/1       Running   0          6d        192.168.99.37    k2
+default       net-test-65f464b4b5-sdrhq                  1/1       Running   0          7d        192.168.99.33    k2
+kube-system   calico-etcd-s62zn                          1/1       Running   0          14d       10.1.0.180       k0
+kube-system   calico-kube-controllers-55449f8d88-2558l   1/1       Running   0          14d       10.1.0.180       k0
+kube-system   calico-node-84wg2                          2/2       Running   1          14d       10.1.0.179       k2
+kube-system   calico-node-9kp9n                          2/2       Running   0          14d       10.1.0.180       k0
+kube-system   calicoctl                                  1/1       Running   0          6d        10.1.0.179       k2
+kube-system   etcd-k0                                    1/1       Running   0          14d       10.1.0.180       k0
+kube-system   kube-apiserver-k0                          1/1       Running   3          14d       10.1.0.180       k0
+kube-system   kube-controller-manager-k0                 1/1       Running   0          14d       10.1.0.180       k0
+kube-system   kube-dns-545bc4bfd4-6k6hw                  3/3       Running   0          14d       192.168.134.65   k0
+kube-system   kube-proxy-chj4f                           1/1       Running   0          14d       10.1.0.179       k2
+kube-system   kube-proxy-rcbtv                           1/1       Running   0          14d       10.1.0.180       k0
+kube-system   kube-scheduler-k0 
+
+root@k0:~/work# curl http://192.168.99.34:8080
+This is Web Server 1 running on 8080!
+
+root@k0:~# kc get svc -o wide
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE       SELECTOR
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   13d       <none>
+svc-test-1   ClusterIP   10.111.30.201   20.1.0.166    80/TCP    7d        app=web-front-end
+root@k0:~# kc get deployment -o wide
+NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE       CONTAINERS          IMAGES                  SELECTOR
+deploy-test-1   3         3         3            3           7d        tiny-web-server-1   jonlangemak/web1_8080   app=web-front-end,version=v1
+deploy-test-2   3         3         3            3           6d        tiny-web-server-1   jonlangemak/web1_9090   app=web-front-end,version=v2
+net-test        1         1         1            1           7d        net-test            jonlangemak/net_tools   run=net-test
+
+root@ubuntu:~# curl http://20.1.0.167
+This is Web Server 1 running on 9090!root@ubuntu:~# 
+root@ubuntu:~# curl http://20.1.0.167
+This is Web Server 1 running on 8080!root@ubuntu:~# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:7f:77:b4 brd ff:ff:ff:ff:ff:ff
+    inet 10.1.0.183/24 brd 10.1.0.255 scope global ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fe7f:77b4/64 scope link 
+       valid_lft forever preferred_lft forever
+3: ens34: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:7f:77:be brd ff:ff:ff:ff:ff:ff
+    inet 20.1.0.165/24 scope global ens34
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fe7f:77be/64 scope link 
+       valid_lft forever preferred_lft forever
+root@ubuntu:~# 
+
+
+colorapple:k8s colorapple$ ifconfig en0
+en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	options=10b<RXCSUM,TXCSUM,VLAN_HWTAGGING,AV>
+	ether c8:2a:14:06:be:55 
+	inet6 fe80::ca2a:14ff:fe06:be55%en0 prefixlen 64 scopeid 0x4 
+	inet 70.70.169.86 netmask 0xffffff00 broadcast 70.70.169.255
+	nd6 options=1<PERFORMNUD>
+	media: autoselect (1000baseT <full-duplex>)
+	status: active
+colorapple:k8s colorapple$ curl http://20.1.0.167
+^C
+colorapple:k8s colorapple$ export no_proxy=localhost,127.0.0.1,devstack,controller,network,compute1,compute2,192.168.59.103,70.60/16,odl-devstack1,packstack-ctrl,10.1.0.148,20.1.0.134,controller.com,70.60.31.147,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,20.1.0.166,10.1.0.177,20.1.0.167
+colorapple:k8s colorapple$ curl http://20.1.0.167
+This is Web Server 1 running on 9090!
+
+
+
+cc apply -f - <<EOF
+- apiVersion: v1
+  kind: policy
+  metadata:
+    name: allow-outbound-external
+  spec:
+    order: 10
+    egress:
+      - action: allow
+EOF
+
+
+
+
+
+cc apply -f - <<EOF
+- apiVersion: v1
+  kind: policy
+  metadata:
+    name: allow-cluster-internal-ingress
+  spec:
+    order: 10
+    preDNAT: true
+    ingress:
+      - action: allow
+        source:
+          nets: [10.111.0.0/16, 192.168.0.0/16]
+EOF
+
+
+
+
+
+
+root@k0:~/work# cc get policy -o wide
+NAME                             ORDER   SELECTOR   
+allow-cluster-internal-ingress   10                 
+allow-outbound-external          10                 
+

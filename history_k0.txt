@@ -1,0 +1,727 @@
+    1  vi /etc/apt/sources.list
+    2  export http_proxy=http://70.10.15.10:8080
+    3  export https_proxy=https://70.10.15.10:8080
+    4  apt -y install openssh-server
+    7  vi /etc/profile
+    8  apt -y install vim
+    9  export http_proxy=http://70.10.15.10:8080/
+   10  export https_proxy=https://70.10.15.10:8080/
+   11  apt -y install vim
+   12  vi .bashrc 
+   13  source .bashrc 
+   16  apt install ntpdate
+   17  vi /etc/profile
+   20  mkdir -p /etc/systemd/system/docker.service.d/
+   21  vi /etc/systemd/system/docker.service.d/http-proxy.conf
+   22  ssh-keygen -t rsa
+   23  mkdir work
+   24  cd work
+   25  mv ~color/docker.list ~color/SDS.crt ~color/sources.list.* .
+   26  ll
+   28  apt-get install     apt-transport-https     ca-certificates     curl     software-properties-common
+   31  cp SDS.crt /usr/local/share/ca-certificates/
+   33  update-ca-certificates
+   38  ifconfig ens34 up
+   40  vi /etc/network/interfaces
+   41  apt install git sl sshfs
+   42  ls -la
+   46  apt install build-essential
+   49  vi /etc/ssh/sshd_config 
+   50  systemctl restart sshd.service 
+   51  vi /etc/network/interfaces
+   52  systemctl restart networking
+   53  ip a
+   54  hostname k0
+   55  echo "k0" > /etc/hostname
+   56  reboot
+   57  clear
+   58  ssh-keygen -t rsa
+   59  vi /etc/hosts
+   60  ssh-copy-id root@k2
+   61  df -h
+   62  vi .bash_aliases
+   63  source .bash_aliases 
+   64  apt update && apt upgrade
+   65  apt-get update && apt-get install -y curl apt-transport-https
+   66  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+   67  cat <<EOF >/etc/apt/sources.list.d/docker.list
+   68  deb https://download.docker.com/linux/$(lsb_release -si | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable
+   69  EOF
+   70  apt-get update && apt-get install -y docker-ce=$(apt-cache madison docker-ce | grep 17.03 | head -1 | awk '{print $3}')
+   71  cat /etc/systemd/system/docker.service.d/http-proxy.conf 
+   72  vi /etc/systemd/system/docker.service.d/http-proxy.conf 
+   73  cat /etc/systemd/system/docker.service.d/http-proxy.conf 
+   74  vi /etc/profile
+   75  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180
+   76  env
+   77  env | grep proxy
+   78  systemctl daemon-reload
+   79  systemctl restart docker
+   80  docker ps
+   81  apt-get update && apt-get install -y apt-transport-https
+   82  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+   83  cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+   84  deb http://apt.kubernetes.io/ kubernetes-xenial main
+   85  EOF
+   86  apt-get update
+   87  apt-get install -y kubelet kubeadm kubectl
+   88  ka init
+   89  vi .bash_aliases 
+   90  source .bash_aliases 
+   92  systemctl status kubelet
+   93  journalctl -xeu kubelet
+   94  vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
+   95  systemctl daemon-reload
+   96  systemctl restart kubelet
+   99  ka init
+  100  mkdir .kube
+  101  cp /etc/kubernetes/admin.conf .kube/config
+  102  kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+  103  kw
+  104  cat /var/lib/kubelet/pods/
+  105  kc run net-test --image=jonlangemak/net_tools
+  106  kw
+  107  kc exec net-test-65f464b4b5-s4xcz -- ip -d link
+  108  kc exec net-test-65f464b4b5-s4xcz ifconfig
+  109  ip a
+  110  ps aux | grep kube
+  111  cat /etc/kubernetes/controller-manager.conf
+  112  cat /etc/kubernetes/bootstrap-kubelet.conf
+  113  cat /etc/kubernetes/kubelet.conf 
+  114  /etc/kubernetes/manifests
+  115  cat /etc/kubernetes/manifests
+  116  cat /etc/kubernetes/manifests/kube-controller-manager.yaml 
+  117  cat /etc/kubernetes/manifests/kube-apiserver.yaml 
+  118  systemctl status kubelet
+  119  cat /lib/systemd/system/kubelet.service
+  120  cat /etc/cni/net.d/10-calico.conf 
+  121  docker ps
+  122  docker ps | grep calico
+  123  docker logs 51cb6071a20d
+  124  kc exec net-test-65f464b4b5-s4xcz ip route
+  125  ping 4.2.2.2 -c 1
+  126  ping 8.8.8.8 -c1
+  127  ping 70.70.169.86 -c1
+  128  kc exec net-test-65f464b4b5-s4xcz -- ping 70.70.169.86 -c1
+  129  kc exec net-test-65f464b4b5-s4xcz -- ping 70.70.169.86 -c5
+  130  kw 
+  131  clear
+  132  kc run pod-test-1 --labels='test=pod1' --image=jonlangemak/web_server_1 --port=90
+  133  kw
+  134  cd work/
+  135  ls -la
+  136  vi pod2-test.yaml
+  137  cat pod2-test.yaml 
+  138  clear
+  139  kc create -f pod2-test.yaml 
+  140  kc get po
+  141  kc logs pod-test-2-777cc76cc9-xg99g -c apache-web-server-1
+  142  kc logs pod-test-2-777cc76cc9-xg99g -c apache-web-server-2
+  143  vi pod2-test.yaml 
+  144  cat pod2-test.yaml 
+  145  kc get po
+  146  kc delete deployments pod-test-2
+  147  kc create -f pod2-test.yaml 
+  148  kc get po -o wide
+  149  vi pod2-test.yaml 
+  150  kc get deployments
+  151  kc delete de pod-test-1
+  152  kc delete deployments  pod-test-1 pod-test-2
+  153  kc run pod-test-1 --labels='test=pod1' --image=jonlangemak/web_server_1 --port=80
+  154  vi pod2-test.yaml 
+  155  mv pod2-test.yaml pod3-test.yaml 
+  156  cat pod3-test.yaml 
+  157  kc create -f pod3-test.yaml 
+  158  kc get po -o wide
+  159  curl http://192.168.99.5
+  160  curl http://k2
+  161  curl http://:8080
+  162  kc get po -o wide
+  163  ping 192.168.99.5
+  164  curl http://192.168.99.5 
+  165  env | grep no_proxy
+  166  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6
+  167  curl http://192.168.99.5 
+  168  curl http://192.168.99.6 
+  169  kw
+  170  kc get deployments
+  171  kc delete deployment pod-test-1
+  172  kc delete deployment pod-test-3
+  173  kc get deployments
+  174  kc get po -o wide
+  175  vi tiny-web-server.yaml
+  176  kc create -f tiny-web-server.yaml 
+  177  kc get deployments
+  178  kc get po -o wide
+  179  cat tiny-web-server.yaml 
+  180  env | grep no_proxy
+  181  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7
+  182  curl http://192.168.99.7:8080
+  183  clear
+  184  vi svc-test-1.yaml
+  185  kc get deployments
+  186  kc get svc
+  187  kc create -f svc-test-1.yaml 
+  188  kc get po -o wide
+  189  curl http://10.109.149.241
+  190  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241
+  191  curl http://10.109.149.241
+  192  cat svc-test-1.yaml 
+  193  ip a
+  194  route -n
+  195  kc get po -o wide
+  196  kc exec -it net-test-65f464b4b5-s4xcz  curl http://10.109.149.241
+  197  kc exec -it net-test-65f464b4b5-s4xcz  curl http://svc-test-1
+  198  kc exec -it net-test-65f464b4b5-s4xcz  cat /etc/resolv.conf
+  199  kc exec -it net-test-65f464b4b5-s4xcz  more /etc/resolv.conf
+  200  kc exec -it net-test-65f464b4b5-s4xcz  nslookup svc-test-1
+  201  kc exec -it net-test-65f464b4b5-s4xcz  curl http://svc-test-1
+  202  kc scale --replicas=3 deployment/deploy-test-1
+  203  kc get po -o wide
+  204  vi deploy-test-2.yaml
+  205  kc create -f deploy-test-2.yaml 
+  206  kc get po -o wide
+  207  clear
+  208  kc exec -it net-test-65f464b4b5-s4xcz  curl http://svc-test-1
+  209  clear
+  210  kc get po --selector=app=web-front-end
+  211  kc scale --replicas=2 deployment/deploy-test-2
+  212  kc get po --selector=app=web-front-end
+  213  kc get svc -o wide
+  214  kc edit service/svc-test-1
+  215  kc get svc -o wide
+  216  kc exec -it net-test-65f464b4b5-s4xcz  curl http://svc-test-1
+  217  clear
+  218  kw
+  219  kc get deployments
+  220  kc delete deploy-test1
+  221  kc delete deployment deploy-test1
+  222  kc delete deployment deploy-test-1
+  223  kc delete deployment deploy-test-2
+  224  kc create -f tiny-web-server.yaml 
+  225  kc get deployments
+  226  kc create -f svc-test-1.yaml 
+  227  vi svc-test-1.yaml 
+  228  kc get svc
+  229  kc get svc -o wide
+  230  vi svc-test-1.yaml 
+  231  grep -rn "version" .
+  232  vi deploy-test-2.yaml 
+  233  kc get deployments
+  234  kc delete deployments deploy-test-1
+  235  kc get svc
+  236  kc delete svc svc-test-1
+  237  kc create -f tiny-web-server.yaml 
+  238  kc create -f svc-test-1.yaml 
+  239  kc get svc -o wide
+  240  kc create -f deploy-test-2.yaml 
+  241  kc get po -o wide
+  242  kc get svc -o wide
+  243  kc edit service svc-test-1
+  244  kc scale --replicas=2 deployment/deploy-test-1
+  245  kc scale --replicas=2 deployment/deploy-test-2
+  246  kc get svc -o wide
+  247  wget 169.10.10.1
+  248  env | grep no_proxy
+  249  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1
+  250  wget 169.10.10.1
+  251  kc exec -it net-test-65f464b4b5-s4xcz  curl http://svc-test-1
+  252  wget 169.10.10.1
+  253  kc edit service svc-test-1
+  254  route -n
+  255  iptables-save
+  256  iptables-save | grep 169.10.10.1
+  257  kc edit service svc-test-1
+  258  iptables-save | grep 10.1.0.176
+  259  wget http://10.1.0.176
+  260  route -b
+  261  route -n
+  262  kc edit service svc-test-1
+  263  ping 169.10.10.1
+  264  kc exec -it net-test-65f464b4b5-s4xcz  curl http://svc-test-1
+  265  route -n
+  266  iptables-save
+  267  clear
+  268  kc get svc -o wide
+  269  curl http://10.109.149.241
+  270  env | grep no_proxy
+  271  curl http://10.109.149.241
+  272  ping 10.109.149.241
+  273  kc exec -it net-test-65f464b4b5-s4xcz  curl http://10.109.149.241
+  274  kc exec -it net-test-65f464b4b5-s4xcz  curl http://svc-test-1
+  275  kc get po -o wide
+  276  curl http://192.168.99.15
+  277  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14
+  278  curl http://192.168.99.15
+  279  kc get po -o wide
+  280  curl http://192.168.99.13
+  281  curl http://192.168.99.14
+  282  kc run pod-test-1 --labels='test=pod1' --image=jonlangemak/web_server_1 --port=80
+  283  kc create -f pod2-test.yam
+  284  ll
+  285  cd ..
+  286  ll
+  287  cd work
+  288  vi pod2-test.yaml
+  289  kc create -f pod2-test.yaml 
+  290  vi pod3-test.yaml
+  291  kc create -f pod3-test.yaml 
+  292  kc get po -o wide
+  293  kc delete po pod-test-2-7d5bbdc55-kdmdj
+  294  kc get po -o wide
+  295  kc delete po pod-test-2-7d5bbdc55-sffld -f
+  296  kc delete po pod-test-2-7d5bbdc55-sffld --force
+  297  kc get po -o wide
+  298  kc get svc -o wide
+  299  kc get deployments -o wide
+  300  kc delete deployment pod-test-2
+  301  kc get deployments -o wide
+  302  kc get svc -o wide
+  303  kc get po -o wide
+  304  vi pod2-test.yaml 
+  305  kc get po -o wide
+  306  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19
+  307  curl http://192.168.99.19
+  308  curl http://192.168.99.17
+  309  curl http://192.168.99.19
+  310  grep -rn "External"
+  311  grep -rn "External" .
+  312  kc edit service svc-test-1
+  313  vi svc-test-1-externalIp.yaml
+  314  kc delete deployments --all
+  315  kc delete po --all
+  316  kc delete services --all
+  317  kc run net-test --image=jonlangemak/net_tools
+  318  vi back-end-deployment.yaml
+  319  vi back-end-service.yaml
+  320  kc create -f back-end-deployment.yaml 
+  321  mkdir ingress
+  322  mv back-end-* ingress/
+  323  cd ingress/
+  324  kc get deployments
+  325  kc get po -o wide
+  326  kc create -f back-end-service.yaml 
+  327  kc get svc -o wide
+  328  vi default-back-end-deployment.yaml
+  329  vi default-back-end-service.yaml
+  330  ls -la
+  331  cat back-end-deployment.yaml 
+  332  cat back-end-service.yaml 
+  333  kc create -f default-back-end-deployment.yaml 
+  334  kc create -f default-back-end-service.yaml 
+  335  kc get deployments
+  336  kc get po -o wide
+  337  kc get services
+  338  vi nginx-ingress-controller-deployment.yaml
+  339  vi nginx-ingress-controller-config-map.yaml
+  340  kc create -f nginx-ingress-controller-config-map.yaml 
+  341  kc create -f nginx-ingress-controller-deployment.yaml 
+  342  kc get deployments nginx-ingress-controller
+  343  kc get po -o wide
+  344  kc exec -it net-test-65f464b4b5-j4c7d curl http://192.168.99.29
+  345  vi nginx-ingress.yaml
+  346  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19,192.168.99.29
+  347  kc exec -it net-test-65f464b4b5-j4c7d curl http://192.168.99.29
+  348  kc create -f nginx-ingress.yaml 
+  349  kc get ingress
+  350  kc exec -it net-test-65f464b4b5-j4c7d -- curl http://192.168.99.29
+  351  kc exec -it net-test-65f464b4b5-j4c7d -- curl -q http://192.168.99.29
+  352  kc exec -it net-test-65f464b4b5-j4c7d -- curl -H Host:website8080.com http://192.168.99.29
+  353  kc exec -it net-test-65f464b4b5-j4c7d -- curl -H Host:website9090.com http://192.168.99.29
+  354  kc exec -it net-test-65f464b4b5-j4c7d -- curl -H Host:website.com http://192.168.99.29
+  355  kc exec -it net-test-65f464b4b5-j4c7d -- curl -H Host:website.com http://192.168.99.29/eightyeighty
+  356  kc exec -it net-test-65f464b4b5-j4c7d -- curl -H Host:website.com http://192.168.99.29/ninetyninety
+  357  kc exec -it net-test-65f464b4b5-j4c7d ping website.com
+  358  kc exec -it net-test-65f464b4b5-j4c7d ping 192.168.99.29
+  359  kc exec -it net-test-65f464b4b5-j4c7d wget 102.168.99.29
+  360  kc exec -it net-test-65f464b4b5-j4c7d wget http://102.168.99.29
+  361  kc exec -it net-test-65f464b4b5-j4c7d curl http://102.168.99.29
+  362  kc exec -it net-test-65f464b4b5-j4c7d curl http://192.168.99.29
+  363  vi nginx-ingress-controller-service.yaml
+  364  kc create -f nginx-ingress-controller-service.yaml 
+  365  kc get services nginx-ingress -o wide
+  366  curl http://website8080.com:30000
+  367  kc exec -it net-test-65f464b4b5-j4c7d curl http://website8080.com:3000
+  368  kc exec -it net-test-65f464b4b5-j4c7d curl http://website9090.com:3000
+  369  kc exec -it net-test-65f464b4b5-j4c7d curl http://website.com:3000
+  370  kc exec -it net-test-65f464b4b5-j4c7d curl http://backend-svc-1
+  371  kc exec -it net-test-65f464b4b5-j4c7d curl http://backend-svc-2
+  372  kc exec -it net-test-65f464b4b5-j4c7d curl http://default-http-backend
+  373  clear
+  374  kc get po -o wide
+  375  kc get deployment
+  376  kc delete deployment nginx-ingress-controller
+  377  kc get deployments
+  378  kubectl get deployments nginx-ingress-controller
+  379  kubectl create -f nginx-ingress-controller-deployment.yaml
+  380  kubectl get deployments nginx-ingress-controller
+  381  kc get po -o wide
+  382  kc exec -it net-test-65f464b4b5-j4c7d curl http://192.168.99.30
+  383  kc get po -o wide
+  384  kc exec -it net-test-65f464b4b5-j4c7d curl http://192.168.99.30
+  385  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19,192.168.99.29,192.168.99.30,192.168.99.31
+  386  kc exec -it net-test-65f464b4b5-j4c7d curl http://192.168.99.30
+  387  kc exec -it net-test-65f464b4b5-j4c7d -- curl -q http://192.168.99.30
+  388  kc exec -it net-test-65f464b4b5-j4c7d -- nslookup 192.168.99.30
+  389  kc get po -o wide
+  390  kc describe po nginx-ingress-controller-58d875f5b4-5gkxn
+  391  kc get po -o wide
+  392  kc delete deployments --all
+  393  kc delete po --all
+  394  kc delete services --all
+  395  kc get deployments
+  396  kc get po -o wide
+  397  kc get svc 
+  398  cd ..
+  399  ll
+  400  mkdir calico
+  401  ls -la
+  402  cd calico/
+  403  clear
+  404  kc run net-test --image=jonlangemak/net_tools
+  405  kc get po -o wide
+  406  net-test-65f464b4b5-47p9t ip link 
+  407  kc exec net-test-65f464b4b5-47p9t ip link 
+  408  kc exec net-test-65f464b4b5-47p9t -- ip link 
+  409  kc exec net-test-65f464b4b5-47p9t -- ip -d link 
+  410  kc exec net-test-65f464b4b5-47p9t ifconfig
+  411  ps aux | grep controller
+  412  cat /etc/kubernetes/controller-manager.conf
+  413  cat /etc/cni/net.d/10-calico.conf 
+  414  docker ps
+  415  docker logs 51cb6071a20d
+  416  kc exec net-test-65f464b4b5-47p9t ip route
+  417  kc exec net-test-65f464b4b5-47p9t ping 70.70.169.86 -c1
+  418  kc exec -it net-test-65f464b4b5-47p9t ping 70.70.169.86 -c1
+  419  ku get po -o wide
+  420  kc get po -o wide
+  421  kc exec -it net-test-65f464b4b5-47p9t -- ping 70.70.169.86 -c1
+  422  kc exec -it net-test-65f464b4b5-47p9t route -n
+  423  kc exec -it net-test-65f464b4b5-47p9t -- route -n
+  424  kc exec -it net-test-65f464b4b5-47p9t -- ip a
+  425  ip route
+  426  kc exec -it net-test-65f464b4b5-47p9t -- ip route
+  427  ip route
+  428  ip a
+  429  kc get svc -o wide
+  430  kc get po -o wide
+  431  kc edit po net-test-65f464b4b5-47p9t
+  432  cd ..
+  433  ll
+  434  vi svc-test-1.yaml 
+  435  vi svc-test-1-externalIp.yaml 
+  436  vi pod2-test.yaml 
+  437  calicoctl
+  438  ip a
+  439  ls -la
+  440  vi /etc/profile
+  441  whereis kubectl
+  442  cp calicoctl /usr/bin/
+  443  cd
+  444  chmod +x /usr/bin/calicoctl 
+  445  calicoctl get nodes
+  446  export DATASTORE_TYPE=kubernetes 
+  447  export KUBECONFIG=/root/.kube/config
+  448  calicoctl get nodes
+  449  kw
+  450  kc get deployments -o wide --all-namespaces
+  451  kc get svc -o wide
+  452  kc delete deployments net-test
+  453  kw
+  454  kc get node
+  455  kw
+  456  cd work
+  457  ll
+  458  mkdir das
+  459  cd das
+  460  mkdir services
+  461  cd services/
+  462  vi deploy-test-1.yaml
+  463  kc create -f deploy-test-1.yaml 
+  464  kc get deployment
+  465  kc get po -o wide
+  466  kc get svc -o wide
+  467  curl http://192.168.99.32:8080
+  468  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19,192.168.99.29,192.168.99.30,192.168.99.31,192.168.99.32,192.168.99.33,192.168.99.34
+  469  curl http://192.168.99.32:8080
+  470  ip a
+  471  route -na
+  472  route -n
+  473  curl http://192.168.99.32:8080
+  474  vi svc-test-1.yaml
+  475  kc get svc -o wide
+  476  kw
+  477  kc get svc
+  478  kc create -f svc-test-1.yaml 
+  479  kc get svc -o wide
+  480  ip a
+  481  route -n
+  482  kc get svc -o wide
+  483  curl http://10.111.30.201
+  484  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19,192.168.99.29,192.168.99.30,192.168.99.31,192.168.99.32,192.168.99.33,192.168.99.34,10.111.30.201,10.111.30.202,10.111.30.203
+  485  curl http://10.111.30.201
+  486  traceroute 10.111.30.201
+  487  apt install traceroute
+  488  traceroute 10.111.30.201
+  489  kubectl run net-test --image=jonlangemak/net_tools
+  490  kc get po -o wide
+  491  kc exec -it net-test-65f464b4b5-sdrhq curl http://10.111.30.201
+  492  kc exec -it net-test-65f464b4b5-sdrhq curl http://svc-test-1
+  493  kc exec -it net-test-65f464b4b5-sdrhq more /etc/resolv.conf
+  494  kw
+  495  kc exec -it net-test-65f464b4b5-sdrhq nslookup svc-test-1
+  496  cat svc-test-1.yaml 
+  497  cat deploy-test-1.yaml 
+  498  curl http://10.111.30.201
+  499  kc exec -it net-test-65f464b4b5-sdrhq curl http://svc-test-1
+  500  clear
+  501  history
+  502  curl http://192.168.99.32:8080
+  503  curl http://10.111.30.201
+  504  kc exec -it net-test-65f464b4b5-sdrhq curl http://10.111.30.201
+  505  kc exec -it net-test-65f464b4b5-sdrhq curl http://svc-test-1
+  506  kc get po -o wide
+  507  kc exec -it net-test-65f464b4b5-sdrhq curl http://svc-test-1
+  508  kc exec -it net-test-65f464b4b5-sdrhq nslookup svc-test-1
+  509  kc get svc -o wide
+  510  kw
+  511  clear
+  512  kubectl scale --replicas=3 deployment/deploy-test-1
+  513  kc get po -o wide
+  514  vi deploy-test-2.yaml
+  515  cat deploy-test-2.yaml 
+  516  kc create -f deploy-test-2.yaml 
+  517  kc get po -o wide
+  518  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19,192.168.99.29,192.168.99.30,192.168.99.31,192.168.99.32,192.168.99.33,192.168.99.34,10.111.30.201,10.111.30.202,10.111.30.203,192.168.99.35,192.168.99.36
+  519  kc exec -it net-test-65f464b4b5-sdrhq curl http://svc-test-1
+  520  kubectl get pods --selector=app=web-front-end
+  521  kubectl scale --replicas=3 deployment/deploy-test-2
+  522  kubectl get pods --selector=app=web-front-end
+  523  kubectl edit service/svc-test-1
+  524  kc get svc -o wide
+  525  kubectl get pods --selector=app=web-front-end,version=v2
+  526  kc get pod -o wide
+  527  kc exec -it net-test-65f464b4b5-sdrhq curl http://svc-test-1
+  528  kubectl get pods --selector=app=web-front-end
+  529  kubectl get pods --selector=app=web-front-end,version=v2
+  530  kc get svc -o wide
+  531  ip route
+  532  kc edit svc svc-test-1
+  533  ip a
+  534  ip a a 10.1.0.177/24 dev ens33
+  535  ip a
+  536  kc get svc -o wide
+  537  kc exec -it net-test-65f464b4b5-sdrhq curl http://10.111.30.201
+  538  curl http://10.111.30.201
+  539  curl http://10.1.0.177
+  540  ip a
+  541  ifconfig ens34 up
+  542  ip a
+  543  ip a a 20.1.0.160/24 dev ens34
+  544  ip a
+  545  ip a a 20.1.0.161/24 dev ens34
+  546  ip a
+  547  kc edit svc svc-test-1
+  548  kc get svc -o wide
+  549  curl http://20.1.0.161
+  550  route -n
+  551  kc edit svc svc-test-1
+  552  curl http://10.1.0.177
+  553  route -n
+  554  env | grep no_proxy
+  555  curl http://10.1.0.177
+  556  kw
+  557  curl http://10.1.0.177
+  558  kc get svc -o wide
+  559  kubectl edit service/svc-test-1
+  560  kc get svc -o wide
+  561  curl http://10.1.0.177
+  562  route -n
+  563  ip route 
+  564  ip a d 10.1.0.177/24 dev ens33
+  565  curl http://10.1.0.177
+  566  vi /etc/network/interfaces
+  567  systemctl restart networking
+  568  ip a
+  569  curl http://10.1.0.177
+  570  tcpdump -i ens33:0 -nn
+  571  tcpdump -i ens33:0 -nn host 10.1.0.177
+  572  tcpdump -i ens33:0 -nn host 10.1.0.183
+  573  tcpdump -i ens33:0 -nn network 10.1.0.0/24
+  574  tcpdump -i ens33:0 -nn -p 80
+  575  tcpdump -i ens33:0 -nn -port 80
+  576  tcpdump -i ens33:0 -n http
+  577  tcpdump -i ens33:0 -n port 80
+  578  tcpdump -i any -n port 80
+  579  exit
+  580  curl http://10.1.0.177
+  581  exit
+  582  ip a
+  583  exit
+  584  curl http://10.111.30.201
+  585  curl http://10.1.0.177
+  586  curl http://10.111.30.201
+  587  curl http://10.1.0.177
+  588  exit
+  589  docker ps
+  590  kw
+  591  kc get svc -o wide
+  592  ip a
+  593  curl http://10.1.0.177
+  594  kc edit svc svc-test-1
+  595  ip a a 20.1.0.166/24 dev ens34
+  596  ip a
+  597  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19,192.168.99.29,192.168.99.30,192.168.99.31,192.168.99.32,192.168.99.33,192.168.99.34,10.111.30.201,10.111.30.202,10.111.30.203,192.168.99.35,192.168.99.36,20.1.0.166
+  598  curl http://20.1.0.166
+  599  ip a
+  600  ip a d 10.1.0.177/24 dev ens33:1
+  601  ip a
+  602  curl http://20.1.0.166
+  603  kc get svc -o wide
+  604  curl http://10.111.30.201
+  605  kc get svc -o wide
+  606  curl http://20.1.0.166
+  607  kw
+  608  kc get svc -o wide
+  609  kc get deployment -o wide
+  610  kc get svc -o wide
+  611  route -n
+  612  curl http://10.111.30.201
+  613  export no_proxy=localhost,127.0.0.1,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,192.168.99.5,192.168.99.6,192.168.99.7,10.109.149.241,169.10.10.1,192.168.99.15,192.168.99.13,192.168.99.14,192.168.99.17,192.168.99.19,192.168.99.29,192.168.99.30,192.168.99.31,192.168.99.32,192.168.99.33,192.168.99.34,10.111.30.201,10.111.30.202,10.111.30.203,192.168.99.35,192.168.99.36,20.1.0.166,10.111.30.201
+  614  curl http://10.111.30.201
+  615  curl http://20.1.0.166
+  616  kw 
+  617  curl http://192.168.99.34
+  618  curl http://192.168.99.34:8080
+  619  curl http://192.168.99.33:8080
+  620  curl http://192.168.99.33:9090
+  621  curl http://192.168.99.37:9090
+  622  cd work
+  623  vi deploy-test-2.yaml 
+  624  cat deploy-test-2.yaml 
+  625  vi deploy-test-1.yaml 
+  626  ll
+  627  curl http://20.1.0.166
+  628  kw
+  629  curl http://192.168.99.34:8080
+  630  curl http://192.168.99.37:9090
+  631  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,10.111.30.201,192.168.99.33,192.168.99.34,192.168.99.35,192.168.99.36,192.168.99.37,192.168.99.38
+  632  vi /etc/profile
+  633  curl http://192.168.99.37:9090
+  634  curl http://192.168.99.34:8080
+  635  kc get svc -o wide
+  636  curl http://10.111.30.201
+  637  curl http://20.1.0.166
+  638  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,10.111.30.201,192.168.99.33,192.168.99.34,192.168.99.35,192.168.99.36,192.168.99.37,192.168.99.38,20.1.0.166
+  639  curl http://20.1.0.166
+  640  vi /etc/profile
+  641  curl http://20.1.0.166
+  642  curl http://10.111.30.201
+  643  ip a a 20.1.0.167/24 dev ens34
+  644  kc edit svc-test-1
+  645  kc edit svc svc-test-1
+  646  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,10.111.30.201,192.168.99.33,192.168.99.34,192.168.99.35,192.168.99.36,192.168.99.37,192.168.99.38,20.1.0.166,20.1.0.167
+  647  kc get svc -o wide
+  648  curl http://20.1.0.167
+  649  curl http://10.111.30.201
+  650  curl http://20.1.0.167
+  651  cc get policy
+  652  cc apply -f - <<EOF
+- apiVersion: v1
+  kind: policy
+  metadata:
+    name: allow-cluster-internal-ingress
+  spec:
+    order: 10
+    preDNAT: true
+    ingress:
+      - action: allow
+        source:
+          nets: [10.111.0.0/16, 192.168.0.0/16]
+EOF
+
+  653  cc get policy -o wide
+  654  cc apply -f - <<EOF
+- apiVersion: v1
+  kind: policy
+  metadata:
+    name: allow-outbound-external
+  spec:
+    order: 10
+    egress:
+      - action: allow
+EOF
+
+  655  cc get policy -o wide
+  656  cat << EOF | cc create -f -
+- apiVersion: v1
+  kind: hostEndpoint
+  metadata:
+    name: ens34
+    node: k0
+    labels:
+      role: webserver
+      environment: production
+  spec:
+    interfaceName: ens34
+    profiles: [k8s_ns.default]
+    expectedIPs: ["20.1.0.160"]
+EOF
+
+  657  cat << EOF | cc create -f -
+- apiVersion: v1
+  kind: hostEndpoint
+  metadata:
+    name: ens34
+    node: k2
+    labels:
+      role: webserver
+      environment: production
+  spec:
+    interfaceName: ens34
+    profiles: [k8s_ns.default]
+    expectedIPs: ["20.1.0.150"]
+EOF
+
+  658  cc get hostEndpoint -o wide
+  659  cc get policy -o wide
+  660  cat ../.bash_aliases 
+  661  clear
+  662  kw
+  663  cat /root/.bash_aliases 
+  664  kw
+  665  kc get svc -o wide
+  666  ip a
+  667  kc get po -n kube-system -o wide
+  668  cc get po
+  669  ce get nodes
+  670  cc get nodes
+  671  cc get nodes -o wide
+  672  cc get hostEndpoints
+  673  cc get hostEndpoints -o wide
+  674  history | grep hostEndpoints
+  675  ls -la
+  676  cd das/
+  677  ls -la
+  678  cd services/
+  679  ll
+  680  cd ..
+  681  cd calico/
+  682  ll
+  683  cd ..
+  684  ll
+  685  cat deploy-test-1.yaml 
+  686  ll
+  687  sc deploy-test-* docker.list das/ pod* svc-test-1.yaml root@70.70.169.86:/Users/colorapple/work/k8s/calico/
+  688  scp deploy-test-* docker.list das/ pod* svc-test-1.yaml root@70.70.169.86:/Users/colorapple/work/k8s/calico/
+  689  cd das/
+  690  ll
+  691  cd services/
+  692  ll
+  693  diff svc-test-1.yaml ../../svc-test-1.yaml 
+  694  cd ..
+  695  cd ingress/
+  696  ll
+  697  history
+  698  cd ..
+  699  history >> history.txt

@@ -1,0 +1,130 @@
+    1  vi /etc/apt/sources.list
+    2  export http_proxy=http://70.10.15.10:8080
+    3  export https_proxy=https://70.10.15.10:8080
+    4  apt -y install openssh-server
+    5  apt -y update
+    6  apt -y install openssh-server
+    7  vi /etc/profile
+    8  apt -y install vim
+    9  export http_proxy=http://70.10.15.10:8080/
+   10  export https_proxy=https://70.10.15.10:8080/
+   11  apt -y install vim
+   12  vi .bashrc 
+   13  source .bashrc 
+   14  export http_proxy=http://70.10.15.10:8080/
+   15  export https_proxy=https://70.10.15.10:8080/
+   16  apt install ntpdate
+   17  vi /etc/profile
+   18  apt update
+   19  vi /etc/profile
+   20  mkdir -p /etc/systemd/system/docker.service.d/
+   21  vi /etc/systemd/system/docker.service.d/http-proxy.conf
+   22  ssh-keygen -t rsa
+   23  mkdir work
+   24  cd work
+   25  mv ~color/docker.list ~color/SDS.crt ~color/sources.list.* .
+   26  ll
+   27  vi ../.bashrc 
+   28  apt-get install     apt-transport-https     ca-certificates     curl     software-properties-common
+   29  cd work
+   30  ls -la
+   31  cp SDS.crt /usr/local/share/ca-certificates/
+   32  update-ca-certificate
+   33  update-ca-certificates
+   34  ifconfig
+   35  ifcfg
+   36  ls -la
+   37  ip a
+   38  ifconfig ens34 up
+   39  ip a
+   40  vi /etc/network/interfaces
+   41  apt install git sl sshfs
+   42  ls -la
+   43  cp /etc/apt/sources.list .
+   44  cp sources.list.jaist /etc/apt/sources.list
+   45  apt update
+   46  apt install build-essential
+   47  shutdown -h now
+   48  apt openssh-server
+   49  apt install openssh-server
+   50  ps aux | grep dpkg
+   51  apt install openssh-server
+   52  passwd
+   53  history
+   54  hostname k2
+   55  vi /etc/hosts
+   56  echo "k2" > /etc/hostname
+   57  su - 
+   58  vi /etc/ssh/sshd_config 
+   59  systemctl restart sshd.service 
+   60  ssh-keygen -t rsa
+   61  ssh-copy-id root@10.1.0.180
+   62  apt install docker
+   63  docker version.
+   64  apt remove docker
+   65  apt install docker.io
+   66  apt-get update && apt-get install -y curl apt-transport-https
+   67  history
+   68  apt-get update && apt-get install -y curl apt-transport-https
+   69  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+   70  cat <<EOF >/etc/apt/sources.list.d/docker.list
+   71  deb https://download.docker.com/linux/$(lsb_release -si | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable
+   72  EOF
+   73  apt-get update && apt-get install -y docker-ce=$(apt-cache madison docker-ce | grep 17.03 | head -1 | awk '{print $3}')
+   74  docker version
+   75  apt install kubeadm kubelet kubectl
+   76  apt-get update && apt-get install -y apt-transport-https
+   77  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+   78  cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+   79  deb http://apt.kubernetes.io/ kubernetes-xenial main
+   80  EOF
+   81  apt-get update
+   82  apt-get install -y kubelet kubeadm kubectl
+   83  systemctl status kubelet
+   84  vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
+   85  systemctl daemon-reload
+   86  systemctl restart kubelet
+   87  systemctl status kubelet
+   88  kubeadm join --token c9439f.95133e62bcd506fe 10.1.0.180:6443 --discovery-token-ca-cert-hash sha256:fcc25ac63827ff3a1b94c5be8d746782e761f86c9a30b3e90868479972d905cb
+   89  env | grep proxy
+   90  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180
+   91  vi /etc/profile
+   92  vi /etc/systemd/system/docker.service.d/http-proxy.conf 
+   93  systemctl daemon-reload
+   94  systemctl restart docker
+   95  kubeadm join --token c9439f.95133e62bcd506fe 10.1.0.180:6443 --discovery-token-ca-cert-hash sha256:fcc25ac63827ff3a1b94c5be8d746782e761f86c9a30b3e90868479972d905cb
+   96  systemctl status kubelet
+   97  scp root@k1:/etc/cni/net.d/* /etc/cni/net.d/
+   98  systemctl restart kubelet
+   99  systemctl status kubelet
+  100  kubeadm reset
+  101  kubeadm join --token d73911.e8add1fa6f82b665 10.1.0.180:6443 --discovery-token-ca-cert-hash sha256:7c009016f710c2a87157af2254c714f0d3244588ed966b3cddf757b13e2ddffd
+  102  kubeadm reset
+  103  kubeadm join --token b02148.ebbae64a17e2e915 10.1.0.180:6443 --discovery-token-ca-cert-hash sha256:5a0559f9c9f67c030a34f83669709734203e3b6458b1cb285348aa70cb0543e5
+  104  kubeadm reset
+  105  kubeadm join --token daf465.36bd8e4e551b5e07 10.1.0.180:6443 --discovery-token-ca-cert-hash sha256:bb3bb4e6ad228441b7f16356a58b48208ee4447a1772f976d4e30e3c3625461e
+  106  docker ps
+  107  kubeadmin reset
+  108  kubeadm reset
+  109  docker ps
+  110  reboot
+  111  kubeadm join --token 1ab534.d6e9ce2eb82bc691 10.1.0.180:6443 --discovery-token-ca-cert-hash sha256:2342bcc0f9a8a569a8b095249ed9db808648719e55a9abfd6e83ea5008678b0e
+  112  docker ps
+  113  reboot
+  114  docker ps
+  115  curl http://10.111.30.201
+  116  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,10.111.30.201
+  117  curl http://10.111.30.201
+  118  curl http://192.168.99.37
+  119  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,10.111.30.201,192.168.99.33,192.168.99.34,192.168.99.35,192.168.99.36,192.168.99.37,192.168.99.38
+  120  vi /etc/profile
+  121  curl http://192.168.99.37:9090
+  122  curl http://192.168.99.34:8080
+  123  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,10.111.30.201,192.168.99.33,192.168.99.34,192.168.99.35,192.168.99.36,192.168.99.37,192.168.99.38,20.1.0.167
+  124  export no_proxy=localhost,127.0.0.1,10.1.0/24,70.60.31/24,Ku1,Ku2,Ku3,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,10.111.30.201,192.168.99.33,192.168.99.34,192.168.99.35,192.168.99.36,192.168.99.37,192.168.99.38,20.1.0.167,20.1.0.166
+  125  ip a
+  126  ls -la
+  127  cd work
+  128  ll
+  129  cd ..
+  130  history >> history_k2.txt
