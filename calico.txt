@@ -18,6 +18,12 @@ kubernetes service에 external ip를 부여하여 외부에서 접속하는 것�
 calico version 2.6
 
 kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+
+root@k0:~/work/das/services# kc get po -n kube-system -l k8s-app=calico-node -o wide
+NAME                READY     STATUS    RESTARTS   AGE       IP           NODE
+calico-node-84wg2   2/2       Running   1          20d       10.1.0.179   k2
+calico-node-9kp9n   2/2       Running   0          20d       10.1.0.180   k0
+
 kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/installation/hosted/calicoctl.yaml
 
 root@k0:~/work# kuberctl get po -n kube-system -o wide
@@ -342,7 +348,40 @@ This is Web Server 1 running on 9090!
 colorapple:k8s colorapple$ curl http://20.1.0.167
 This is Web Server 1 running on 8080!
   
- 
+root@k0:~/work# tcpdump -i any -nn port 80 
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on any, link-type LINUX_SLL (Linux cooked), capture size 262144 bytes
+21:52:16.360406 IP 20.1.0.1.63001 > 20.1.0.167.80: Flags [S], seq 6687636, win 65535, options [mss 1460,nop,wscale 5,nop,nop,TS val 1450775783 ecr 0,sackOK,eol], length 0
+21:52:16.361033 IP 20.1.0.167.80 > 20.1.0.1.63001: Flags [S.], seq 2778789922, ack 6687637, win 28960, options [mss 1460,sackOK,TS val 40872472 ecr 1450775783,nop,wscale 7], length 0
+21:52:16.361154 IP 20.1.0.1.63001 > 20.1.0.167.80: Flags [.], ack 1, win 4117, options [nop,nop,TS val 1450775783 ecr 40872472], length 0
+21:52:16.361219 IP 20.1.0.1.63001 > 20.1.0.167.80: Flags [P.], seq 1:75, ack 1, win 4117, options [nop,nop,TS val 1450775784 ecr 40872472], length 74: HTTP: GET / HTTP/1.1
+21:52:16.361605 IP 20.1.0.167.80 > 20.1.0.1.63001: Flags [.], ack 75, win 227, options [nop,nop,TS val 40872472 ecr 1450775784], length 0
+21:52:16.361980 IP 20.1.0.167.80 > 20.1.0.1.63001: Flags [P.], seq 1:155, ack 75, win 227, options [nop,nop,TS val 40872472 ecr 1450775784], length 154: HTTP: HTTP/1.1 200 OK
+21:52:16.362108 IP 20.1.0.1.63001 > 20.1.0.167.80: Flags [.], ack 155, win 4112, options [nop,nop,TS val 1450775784 ecr 40872472], length 0
+21:52:16.362190 IP 20.1.0.1.63001 > 20.1.0.167.80: Flags [F.], seq 75, ack 155, win 4112, options [nop,nop,TS val 1450775784 ecr 40872472], length 0
+21:52:16.362557 IP 20.1.0.167.80 > 20.1.0.1.63001: Flags [F.], seq 155, ack 76, win 227, options [nop,nop,TS val 40872472 ecr 1450775784], length 0
+21:52:16.362650 IP 20.1.0.1.63001 > 20.1.0.167.80: Flags [.], ack 156, win 4112, options [nop,nop,TS val 1450775785 ecr 40872472], length 0
+
+
+root@k2:~# tcpdump -i any -nn port 8080
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on any, link-type LINUX_SLL (Linux cooked), capture size 262144 bytes
+21:53:30.550811 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [S], seq 1689959729, win 65535, options [mss 1460,nop,wscale 5,nop,nop,TS val 1450849774 ecr 0,sackOK,eol], length 0
+21:53:30.550868 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [S], seq 1689959729, win 65535, options [mss 1460,nop,wscale 5,nop,nop,TS val 1450849774 ecr 0,sackOK,eol], length 0
+21:53:30.550927 IP 192.168.99.41.8080 > 192.168.134.64.63038: Flags [S.], seq 3896041019, ack 1689959730, win 28960, options [mss 1460,sackOK,TS val 40891019 ecr 1450849774,nop,wscale 7], length 0
+21:53:30.550934 IP 192.168.99.41.8080 > 192.168.134.64.63038: Flags [S.], seq 3896041019, ack 1689959730, win 28960, options [mss 1460,sackOK,TS val 40891019 ecr 1450849774,nop,wscale 7], length 0
+21:53:30.577511 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [.], ack 1, win 4117, options [nop,nop,TS val 1450849775 ecr 40891019], length 0
+21:53:30.577530 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [.], ack 1, win 4117, options [nop,nop,TS val 1450849775 ecr 40891019], length 0
+21:53:30.577533 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [P.], seq 1:75, ack 1, win 4117, options [nop,nop,TS val 1450849775 ecr 40891019], length 74: HTTP: GET / HTTP/1.1
+21:53:30.578367 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [.], ack 155, win 4112, options [nop,nop,TS val 1450849801 ecr 40891026], length 0
+21:53:30.578381 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [.], ack 155, win 4112, options [nop,nop,TS val 1450849801 ecr 40891026], length 0
+21:53:30.578478 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [F.], seq 75, ack 155, win 4112, options [nop,nop,TS val 1450849801 ecr 40891026], length 0
+21:53:30.578484 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [F.], seq 75, ack 155, win 4112, options [nop,nop,TS val 1450849801 ecr 40891026], length 0
+21:53:30.578576 IP 192.168.99.41.8080 > 192.168.134.64.63038: Flags [F.], seq 155, ack 76, win 227, options [nop,nop,TS val 40891026 ecr 1450849801], length 0
+21:53:30.578622 IP 192.168.99.41.8080 > 192.168.134.64.63038: Flags [F.], seq 155, ack 76, win 227, options [nop,nop,TS val 40891026 ecr 1450849801], length 0
+21:53:30.579075 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [.], ack 156, win 4112, options [nop,nop,TS val 1450849801 ecr 40891026], length 0
+21:53:30.579089 IP 192.168.134.64.63038 > 192.168.99.41.8080: Flags [.], ack 156, win 4112, options [nop,nop,TS val 1450849801 ecr 40891026], length 0
+
  
 이 설명들이 연결된 문서나 예제가 없어서 여러 실험을 하다가 policy 부여 및 hostEndpoint 연결이 주요했음을 알게되었습니다. 
 그러나 이경우는, 최소 2개 이상의 external ip를 부여하려면 그만큼 인터페이스를 추가해주어야 합니다. 
