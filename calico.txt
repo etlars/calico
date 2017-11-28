@@ -1,0 +1,305 @@
+﻿korean --> utf-8 encoding
+
+
+kubernetes-calico 환경에서 특정 서비스에 external ip를 부여하는 방법에 대하여 파악하였습니다.
+ 
+kubernetes pod에 external ip를 부여하는 것이 아니라,
+kubernetes service에 external ip를 부여하여 외부에서 접속하는 것입니다. 
+ 
+ 
+(1) 기본 테스트 환경은... 
+ 
+
+위 그림에서 처럼 management용 10.0.1.0/24대역 interface와 
+외부접속용 20.0.1.0/24 대역으로 두개의 interface를 각 호스트머신에 설치합니다. 
+실제 baremetal일 경우 물리인터페이스에 해당합니다. 
+ 
+(2) kubernetes와 calico를 각각 설치합니다. 
+calico version 2.6
+
+kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/installation/hosted/calicoctl.yaml
+
+root@k0:~/work# kuberctl get po -n kube-system -o wide
+NAMESPACE     NAME                                       READY     STATUS    RESTARTS   AGE       IP               NODE
+kube-system   calico-etcd-s62zn                          1/1       Running   0          14d       10.1.0.180       k0
+kube-system   calico-kube-controllers-55449f8d88-2558l   1/1       Running   0          14d       10.1.0.180       k0
+kube-system   calico-node-84wg2                          2/2       Running   1          14d       10.1.0.179       k2
+kube-system   calico-node-9kp9n                          2/2       Running   0          14d       10.1.0.180       k0
+kube-system   calicoctl                                  1/1       Running   0          6d        10.1.0.179       k2
+kube-system   etcd-k0                                    1/1       Running   0          14d       10.1.0.180       k0
+kube-system   kube-apiserver-k0                          1/1       Running   3          14d       10.1.0.180       k0
+kube-system   kube-controller-manager-k0                 1/1       Running   0          14d       10.1.0.180       k0
+kube-system   kube-dns-545bc4bfd4-6k6hw                  3/3       Running   0          14d       192.168.134.65   k0
+kube-system   kube-proxy-chj4f                           1/1       Running   0          14d       10.1.0.179       k2
+kube-system   kube-proxy-rcbtv                           1/1       Running   0          14d       10.1.0.180       k0
+kube-system   kube-scheduler-k0
+ 
+모든 컴포넌트들이 container형태로 설치하였습니다. 
+  
+ 
+(3) calicoctl 명령으로 hostEndpoint를 이 환경에 추가해줍니다. 
+ 
+root@k0:~/work# kubectl exec -ti -n kube-system calicoctl -- /calicoctl  get hostEndpoint -o wide
+NODE   NAME    INTERFACE   IPS          PROFILES
+k0     ens34   ens34       20.1.0.160   k8s_ns.default
+k2     ens34   ens34       20.1.0.150   k8s_ns.default
+ 
+(4) 테스트용 service를 설치합니다. 
+
+root@k0:~/work# cat deploy-test-1.yaml 
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: deploy-test-1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-front-end
+        version: v1
+    spec:
+      containers:
+      - name: tiny-web-server-1
+        image: jonlangemak/web1_8080
+        ports:
+        - containerPort: 8080
+          name: web-port
+          protocol: TCP
+
+root@k0:~/work# cat deploy-test-2.yaml 
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: deploy-test-2
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-front-end
+        version: v2
+    spec:
+      containers:
+      - name: tiny-web-server-1
+        image: jonlangemak/web1_9090
+        ports:
+        - containerPort: 9090
+          name: web-port
+          protocol: TCP
+
+root@k0:~# kc create -f deploy-test-1.yaml
+root@k0:~# kubectl scale --replicas=3 deployment/deploy-test-1
+root@k0:~# kc create -f deploy-test-2.yaml
+root@k0:~# kubectl scale --replicas=3 deployment/deploy-test-2
+
+
+root@k0:~# kc get deployment -o wide
+NAME            DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE       CONTAINERS          IMAGES                  SELECTOR
+deploy-test-1   3         3         3            3           7d        tiny-web-server-1   jonlangemak/web1_8080   app=web-front-end,version=v1
+deploy-test-2   3         3         3            3           6d        tiny-web-server-1   jonlangemak/web1_9090   app=web-front-end,version=v2
+net-test        1         1         1            1           7d        net-test            jonlangemak/net_tools   run=net-test
+
+
+단순하게 http request에 80-->8080과 80-->9090으로 포트변환하는 두가지 deployment를 하나의 서비스로 엮어서 service ip로 request하면 8080과 9090이 번갈아 응답합니다. 
+
+root@k0:~/work# kc get po -o wide
+NAME                             READY     STATUS    RESTARTS   AGE       IP              NODE
+deploy-test-1-7779cfc7f9-lrkp7   1/1       Running   0          4h        192.168.99.41   k2
+deploy-test-1-7779cfc7f9-wkfvt   1/1       Running   0          4h        192.168.99.39   k2
+deploy-test-1-7779cfc7f9-zhn9k   1/1       Running   0          4h        192.168.99.40   k2
+deploy-test-2-5d9f58b8cd-5fkzm   1/1       Running   0          4h        192.168.99.43   k2
+deploy-test-2-5d9f58b8cd-kk8qd   1/1       Running   0          4h        192.168.99.45   k2
+deploy-test-2-5d9f58b8cd-rpk2d   1/1       Running   0          4h        192.168.99.42   k2
+net-test-65f464b4b5-2x8b7        1/1       Running   0          4h        192.168.99.44   k2
+
+root@k0:~/work# curl http://192.168.99.41:8080
+This is Web Server 1 running on 8080!
+root@k0:~/work# curl http://192.168.99.42:9090
+This is Web Server 1 running on 9090!
+ 
+root@k0:~/work# cat svc-test-1.yaml 
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-test-1
+spec:
+  selector:
+    app: web-front-end
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: web-port
+root@k0:~/work# kc create -f svc-test-1.yaml
+root@k0:~/work# kc get svc -o wide
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE       SELECTOR
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   13d       <none>
+svc-test-1   ClusterIP   10.111.30.201   <none>         80/TCP    7d        app=web-front-end
+ 
+ 
+서비스 ip로 요청해보면... 이 아이피는 실제아이피가 아닌 kubernetes가 생성한 가상 ip 입니다.
+root@k0:~/work# curl http://10.111.30.201
+This is Web Server 1 running on 8080!
+root@k0:~/work# curl http://10.111.30.201
+This is Web Server 1 running on 9090!
+
+
+root@k0:~/work# kc exec -it net-test-65f464b4b5-2x8b7 curl http://svc-test-1
+This is Web Server 1 running on 8080!root@k0:~/work# kc exec -it net-test-65f464b4b5-2x8b7 nslookup svc-test-1
+Server:		10.96.0.10
+Address:	10.96.0.10#53
+
+Non-authoritative answer:
+Name:	svc-test-1.default.svc.cluster.local
+Address: 10.111.30.201
+
+root@k0:~/work#  
+ 
+root@k0:~/work# kc exec -it net-test-65f464b4b5-2x8b7 curl http://svc-test-1
+This is Web Server 1 running on 8080!root@k0:~/work# kc exec -it net-test-65f464b4b5-2x8b7 nslookup svc-test-1
+Server:		10.96.0.10
+Address:	10.96.0.10#53
+
+Non-authoritative answer:
+Name:	svc-test-1.default.svc.cluster.local
+Address: 10.111.30.201
+
+
+그리고 cloud service나 외부 LB가 없기 때문에 
+kubectl edit으로 external ip를 수동으로 넣어줍니다. 
+
+
+root@k0:~/work# kc edit svc svc-test-1
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: 2017-11-14T11:50:58Z
+  name: svc-test-1
+  namespace: default
+  resourceVersion: "140055"
+  selfLink: /api/v1/namespaces/default/services/svc-test-1
+  uid: 143dc5eb-c932-11e7-8564-000c2964244a
+spec:
+  clusterIP: 10.111.30.201
+  externalIPs:
+  - 20.1.0.167
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: web-port
+  selector:
+    app: web-front-end
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+
+
+root@k0:~/work# kc get svc -o wide
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE       SELECTOR
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   13d       <none>
+svc-test-1   ClusterIP   10.111.30.201   20.1.0.167    80/TCP    7d        app=web-front-end
+ 
+그리고, 20.1.0.167를 master node에 ip addr add명령으로 secondary ip로 추가합니다.
+root@k0:~/work# ip a a 20.1.0.167/24 dev ens34
+
+(5) 설정된 external ip로 request 해보면...  
+root@k0:~/work# curl http://20.1.0.167
+This is Web Server 1 running on 9090! 
+ 
+(6) 외부에서 external ip로 request 해보면... 안됩니다.
+(7) calicoctl로 다음과 같이 policy를 넣어줍니다.
+
+root@k0:~/work# calicoctl apply -f - <<EOF
+- apiVersion: v1
+  kind: policy
+  metadata:
+    name: allow-outbound-external
+  spec:
+    order: 10
+    egress:
+      - action: allow
+EOF
+ 
+root@k0:~/work# calicoctl apply -f - <<EOF
+- apiVersion: v1
+  kind: policy
+  metadata:
+    name: allow-cluster-internal-ingress
+  spec:
+    order: 10
+    preDNAT: true
+    ingress:
+      - action: allow
+        source:
+          nets: [10.111.0.0/16, 192.168.0.0/16]
+EOF
+ 
+(8) policy들을 확인해보고...
+
+root@k0:~/work# calicoctl get policy -o wide
+NAME                             ORDER   SELECTOR
+allow-cluster-internal-ingress   10
+allow-outbound-external          10
+ 
+ 
+(9) 외부에서 external ip로 request 해보면...
+ 
+ 
+외부이나 같은 대역대에 있는 다른 host에서... 
+ 
+root@ubuntu:~# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:7f:77:b4 brd ff:ff:ff:ff:ff:ff
+    inet 10.1.0.183/24 brd 10.1.0.255 scope global ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fe7f:77b4/64 scope link
+       valid_lft forever preferred_lft forever
+3: ens34: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:7f:77:be brd ff:ff:ff:ff:ff:ff
+    inet 20.1.0.165/24 scope global ens34
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fe7f:77be/64 scope link
+       valid_lft forever preferred_lft forever
+root@ubuntu:~# 
+root@ubuntu:~# curl http://20.1.0.167
+This is Web Server 1 running on 9090!
+root@ubuntu:~# curl http://20.1.0.167
+This is Web Server 1 running on 8080!
+8080과 9090번갈아 응답하는 것을 확인할 수 있슴. 
+ 
+외부이나 다른 대역대에 있는 다른 host에서... 
+ 
+colorapple:k8s colorapple$ ifconfig en0
+en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+        options=10b<RXCSUM,TXCSUM,VLAN_HWTAGGING,AV>
+        ether c8:2a:14:06:be:55
+        inet6 fe80::ca2a:14ff:fe06:be55%en0 prefixlen 64 scopeid 0x4
+        inet 70.70.169.86 netmask 0xffffff00 broadcast 70.70.169.255
+        nd6 options=1<PERFORMNUD>
+        media: autoselect (1000baseT <full-duplex>)
+        status: active
+colorapple:k8s colorapple$ curl http://20.1.0.167  아... 방화벽... 
+
+colorapple:k8s colorapple$ export no_proxy=localhost,127.0.0.1,devstack,controller,network,compute1,compute2,192.168.59.103,70.60/16,odl-devstack1,packstack-ctrl,10.1.0.148,20.1.0.134,controller.com,70.60.31.147,10.1.0.176,10.1.0.177,10.1.0.178,10.1.0.179,10.1.0.180,20.1.0.166,10.1.0.177,20.1.0.167
+colorapple:k8s colorapple$ curl http://20.1.0.167
+This is Web Server 1 running on 9090!
+colorapple:k8s colorapple$ curl http://20.1.0.167
+This is Web Server 1 running on 8080!
+  
+ 
+ 
+이 설명들이 연결된 문서나 예제가 없어서 여러 실험을 하다가 policy 부여 및 hostEndpoint 연결이 주요했음을 알게되었습니다. 
+그러나 이경우는, 최소 2개 이상의 external ip를 부여하려면 그만큼 인터페이스를 추가해주어야 합니다. 
