@@ -166,6 +166,9 @@ Name:	svc-test-1.default.svc.cluster.local
 Address: 10.111.30.201
 
 
+
+
+
 그리고 cloud service나 외부 LB가 없기 때문에 
 kubectl edit으로 external ip를 수동으로 넣어줍니다. 
 
@@ -214,7 +217,48 @@ root@k0:~/work# curl http://20.1.0.167
 This is Web Server 1 running on 9090! 
  
 (6) 외부에서 external ip로 request 해보면... 안됩니다.
-(7) calicoctl로 다음과 같이 policy를 넣어줍니다.
+(7) calicoctl로 hostEndpoint를 추가합니다.
+
+
+root@k0:~/work# cat << EOF | cc create -f -
+- apiVersion: v1
+  kind: hostEndpoint
+  metadata:
+    name: ens34
+    node: k2
+    labels:
+      role: webserver
+      environment: production
+  spec:
+    interfaceName: ens34
+    profiles: [k8s_ns.default]
+    expectedIPs: ["20.1.0.150"]
+EOF
+
+root@k0:~/work# 
+root@k0:~/work# cat << EOF | cc create -f -
+- apiVersion: v1
+  kind: hostEndpoint
+  metadata:
+    name: ens34
+    node: k0
+    labels:
+      role: webserver
+      environment: production
+  spec:
+    interfaceName: ens34
+    profiles: [k8s_ns.default]
+    expectedIPs: ["20.1.0.160"]
+EOF
+
+
+root@k0:~/work/das/services# cc get hostEndpoint -o wide
+NODE   NAME    INTERFACE   IPS          PROFILES         
+k0     ens34   ens34       20.1.0.160   k8s_ns.default   
+k2     ens34   ens34       20.1.0.150   k8s_ns.default   
+
+
+(8) calicoctl로 다음과 같이 policy를 넣어줍니다.
 
 root@k0:~/work# calicoctl apply -f - <<EOF
 - apiVersion: v1
@@ -241,7 +285,7 @@ root@k0:~/work# calicoctl apply -f - <<EOF
           nets: [10.111.0.0/16, 192.168.0.0/16]
 EOF
  
-(8) policy들을 확인해보고...
+(9) policy들을 확인해보고...
 
 root@k0:~/work# calicoctl get policy -o wide
 NAME                             ORDER   SELECTOR
@@ -249,9 +293,8 @@ allow-cluster-internal-ingress   10
 allow-outbound-external          10
  
  
-(9) 외부에서 external ip로 request 해보면...
- 
- 
+외부에서 external ip로 request 해보면...
+  
 외부이나 같은 대역대에 있는 다른 host에서... 
  
 root@ubuntu:~# ip a
